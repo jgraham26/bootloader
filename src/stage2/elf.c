@@ -145,7 +145,6 @@ uint32_t load_elf64_from_buffer(const uint8_t *elf, uint32_t elf_size) {
     // Jump to entry point
     entry_func_t entry = (entry_func_t)((uint32_t)phys_entry);
 
-    clearScreen();
 
 
     kernel_jmp(entry);

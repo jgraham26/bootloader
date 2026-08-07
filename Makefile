@@ -11,7 +11,7 @@ bootsect:
 	$(MAKE) -C src/bootsect
 
 qemu: disk.img
-	qemu-system-x86_64 -hda disk.img
+	qemu-system-x86_64 -hda disk.img -enable-kvm
 
 bochs: disk.img
 	bochs -f bochsrc.txt -dbg_gui

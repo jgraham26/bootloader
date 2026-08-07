@@ -9,8 +9,7 @@ OBJ = $(C_SRC:.c=.c.o) $(ASM_SRC:.S=.S.o)
 
 stage2.bin: $(OBJ)
 	$(CC) $(LDFLAGS) -o $@ $(OBJ)
-	truncate -s 30K stage2.bin
-	cat lm_init.bin >> $@
+	truncate -s 31K stage2.bin
 
 %.c.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
