@@ -1,0 +1,27 @@
+megs: 512
+
+cpu: count=1, ips=50000000, model=core2_penryn_t9600, reset_on_triple_fault=1
+
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest.bin
+
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+
+ata0-master: type=disk, path="hdd.img"
+
+
+boot: disk
+
+vga: extension=vbe, update_freq=60
+mouse: enabled=0
+
+
+log: bochsout.txt
+logprefix: %t%e%d
+panic: action=ask
+error: action=report
+info: action=report
+debug: action=ignore
+
+magic_break: enabled=1
+com1: enabled=1, mode=file, dev=serial_out.txt

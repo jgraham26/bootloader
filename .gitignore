@@ -1,0 +1,7 @@
+hdd.img
+*.ini
+*.o
+*.bin
+*.map
+snapshot.txt
+bochsout.txt
