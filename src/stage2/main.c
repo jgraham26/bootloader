@@ -293,16 +293,7 @@ void stage2_main(uint32_t e820_addr, uint32_t boot_drive) {
     if (mb2_hdr.has_framebuffer) {
         uint32_t eax;
         int ret = vbe_set_mode_debug(mb2_hdr.fb_width, mb2_hdr.fb_height, mb2_hdr.fb_depth, &fb, &eax);
-        if (ret == 0) {
-            // Fill top 20 rows with solid green (assuming 32-bpp ARGB/XRGB) to verify LFB
-            uint32_t *lfb = (uint32_t *)fb.phys_base;
-            uint32_t stride = fb.pitch / 4;
-            for (uint32_t y = 0; y < 20 && y < fb.height; y++) {
-                for (uint32_t x = 0; x < fb.width; x++) {
-                    lfb[y * stride + x] = 0x0000FF00;
-                }
-            }
-        } else if (!mb2_hdr.framebuffer_optional) {
+        if (ret && !mb2_hdr.framebuffer_optional) {
             vga_print("Required VBE ret, err", 0x0C, 8);
             vga_print_hex(eax, 0xC, 9, 0);
             vga_print_hex(ret, 0xC, 10, 0);

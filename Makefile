@@ -1,25 +1,34 @@
-MAX_SECTORS = 64
+MAX_SECTORS := 64
 
-.PHONY: src/stage2/stage2.bin clean
+STAGE1 := src/bootsector/bootsector.bin
+STAGE2 := src/stage2/stage2.bin
 
-hdd.img: src/bootsector/bootsector.bin src/stage2/stage2.bin
-	dd if=/dev/zero of=hdd.img bs=512 count=$(MAX_SECTORS)
-	dd if=src/bootsector/bootsector.bin of=hdd.img conv=notrunc
-	dd if=src/stage2/stage2.bin of=hdd.img conv=notrunc seek=1 bs=512
-	truncate -s %512 hdd.img
+.PHONY: all bins qemu bochs clean
+
+all: hdd.img
+
+# Target for parent projects (like jackos-v10) that only need the raw binaries
+bins: $(STAGE1) $(STAGE2)
+
+hdd.img: $(STAGE1) $(STAGE2)
+	dd if=/dev/zero of=$@ bs=512 count=$(MAX_SECTORS) status=none
+	dd if=$(STAGE1) of=$@ conv=notrunc status=none
+	dd if=$(STAGE2) of=$@ conv=notrunc seek=1 bs=512 status=none
+	truncate -s %512 $@
 	@SECTORS=$$(( ($$(stat -c "%s" $@) + 511) / 512 )); \
 	echo "Size: $$SECTORS sectors (Limit: $(MAX_SECTORS))"; \
 	if [ "$$SECTORS" -gt "$(MAX_SECTORS)" ]; then \
-		echo "WARNING: $< exceeds $(MAX_SECTORS) sectors (got $$SECTORS)" >&2; \
+		echo "WARNING: $(STAGE2) exceeds $(MAX_SECTORS) sectors (got $$SECTORS)" >&2; \
 	fi
 
+$(STAGE1): src/bootsector/bootsector.asm
+	$(MAKE) -C src/bootsector
 
-src/bootsector/bootsector.bin: src/bootsector/bootsector.asm
-	pushd src/bootsector && $(MAKE) && popd
+# Delegate directly to src/stage2/Makefile so it tracks its own .c/.asm dependencies
+$(STAGE2): FORCE
+	$(MAKE) -C src/stage2
 
-src/stage2/stage2.bin:
-	pushd src/stage2 && $(MAKE) && popd
-
+FORCE:
 
 qemu: hdd.img
 	qemu-system-x86_64 -drive format=raw,file=hdd.img
@@ -29,5 +38,5 @@ bochs: hdd.img
 
 clean:
 	rm -f hdd.img
-	pushd src/bootsector && $(MAKE) clean && popd
-	pushd src/stage2 && $(MAKE) clean && popd
+	$(MAKE) -C src/bootsector clean
+	$(MAKE) -C src/stage2 clean
